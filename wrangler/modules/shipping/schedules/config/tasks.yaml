@@ -1,0 +1,121 @@
+web_crawl_task:
+  description: >
+    Execute the following steps in order:
+    If not already known, determine the official UN/LOCODE port codes for both Colombo, 
+        Sri Lanka (LKCMB) and Cape Town, South Africa (ZACPT).
+    Use the provided search tool to gather seafreight information specifically for {FCL}
+        (Full Container Load) shipments.
+    Organize the collected information into a structured format covering:
+    - Transit time
+    - Departure frequency
+    - Shipping carriers
+    - Route details (including port stops and distances)
+    - Resource (website name and URL)
+    
+    Origin: {origin}
+    Destination: {destination}
+    Container type: {FCL}
+
+  expected_output: >
+    A well-organized, comprehensive research summary demonstrating the insight and attention 
+        to detail of an experienced shipping logistics officer. The report should outline 
+        shipping routes, schedules, transit times, costs, regulations, and relevant considerations. 
+        Structure the report in a clear, professional format.
+
+    Example output:
+
+    When planning sea freight from Colombo (LKCMB) to Cape Town (ZACPT), the following routes and details are identified:
+
+    1. Direct Route via the Suez Canal:
+       - Transit Time: ~30 days and 7 hours
+       - Departure Frequency: Every 1–2 weeks
+       - Carriers: MSC, Evergreen
+       - Route Details: Covers approximately 20,820 km with four port stops en route
+       - Resource: https://www.fluentcargo.com/routes/colombo-lk/cape-town-za
+    
+    2. Colombo to Durban (ZADUR):
+       - Transit Time: ~11 days and 13 hours
+       - Departure Frequency: Weekly or biweekly
+       - Carriers: ONE, Hapag-Lloyd
+       - Route Details: Direct route, 7,117 km, no transshipments
+       - Resource: https://www.somewebsite.com/search/routes/colombo-lk/cape-town-za
+    
+    3. Colombo to Port Elizabeth (ZAPLZ):
+       - Transit Time: ~17 days and 19 hours
+       - Departure Frequency: Every 1–2 weeks
+       - Carrier: Hapag-Lloyd
+       - Route Details: One transshipment; total distance 7,858 km
+       - Resource: https://www.somewebsite.com/search/routes/colombo-lk/cape-town-za
+    
+    4. Colombo to Durban via Cape of Good Hope:
+       - Transit Time: Up to 2 weeks longer than the Suez Canal route
+       - Departure Frequency: Variable
+       - Carriers: Various, depending on schedules and geopolitical factors
+       - Route Details: Longer route around southern Africa; used during disruptions
+       - Resource: https://www.somewebsite.com/search/routes/colombo-lk/cape-town-za
+    
+    5. Colombo to Cape Town via the International North–South Transport Corridor (INSTC):
+       - Transit Time: Variable, based on routing
+       - Departure Frequency: Depends on carriers and intermodal scheduling
+       - Carriers: Multiple INSTC network participants
+       - Route Details: Multi-modal route via India, Iran, and Russia
+       - Resource: https://www.somewebsite.com/search/routes/colombo-lk/cape-town-za
+    
+    Key considerations:
+    - Balance transit time with shipping costs
+    - Confirm the most recent carrier schedules directly with shipping lines
+    - Check for port congestion or operational changes
+    - Monitor geopolitical events affecting preferred routes
+
+    For the most current and precise shipping schedules and rates, logistics officers 
+        are advised to consult directly with carriers or verified freight forwarding platforms.
+
+#  output_file: "/home/nuwan/workspace/advantis/wrangler/data/shipping/schedules/web_search.txt"
+
+scrape_content_task:
+  description: >
+    Retrieve and summarize sea freight schedules from {URL} for shipments between {origin} and {destination}.
+    Follow these steps:
+    1. Identify the port codes of {origin} and {destination}.
+    2. Scrape the provided {URL} for available shipping schedules, costs, and vessel details 
+        for a single {FCL} cargo.
+    3. Prioritize schedules based on shortest transit times and lowest costs.
+    4. Extract key restrictions, regulations, and other noteworthy details.
+    5. Format schedules into structured paragraphs, ensuring clarity and accuracy.
+    6. Include references and sources for validation.
+    
+    origin : {origin}
+    destination: {destination}
+    FCL: {FCL}
+    URL : {URL}
+
+  expected_output: >
+      A structured list of up to 5 schedules, each containing
+          information as bullet points:
+      - Route details (origin, destination, transit ports)
+      - Pricing breakdown (port costs, shipping costs)
+      - Duration breakdown, in days, travel times and transit times
+      - Distance breakdown, in Km, between ports
+      - Frequency of departures
+      - Vessel names and shipping lines
+      - A concise summary of applicable policies and regulations.
+
+#  output_file: "/home/nuwan/workspace/advantis/wrangler/data/shipping/schedules/url_search.txt"
+
+organize_content_task:
+  description: >
+    Execute in the given order:
+    1. Deligate the {retriever_agents} to collect the required shipping details
+    2. Analyze the received content to remove duplicate schedules
+    3. Create a semi structured information set for each port with information linking:
+        destination ports and the inter port travel times, costs, and regulations 
+    3. Use the tool to group each port as information set to convert the information into vector embeddings
+    4. Store the grouped port-wise information set as a vector embedding
+
+    retrievers : {retriever_agents}
+
+  expected_output: >
+    Formatted and summarized shipping schedule content that emulates the skills of an expert
+    shipping logistics manager knowledgable about shipping routes, schedules,
+    times, costs, and regulations
+    
