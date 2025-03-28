@@ -1,0 +1,26 @@
+content_read_task:
+
+  description: >
+    Execute the following steps in order:
+    1. Use the tool to read the email content
+    2. Filter the email from {from_date} to {to_date}
+#    3. Organize the content by subject, body, sender, and datetime
+
+  expected_output: >
+    A well-organized and comprehensive retrieval of content from {from_date} 
+        to {to_date}
+    Structure the email conten in a clear, professional format.
+
+    Example output:
+
+#    Email address: nuwan@myinbox.io
+#    Subject: Haycarb 2 x 40-FCL for European Water Works
+#        Date: 2025-Feb-03 10:50:20
+#        Sender: Ruwan Waidyaratne <rwaidyaratne@advantis.com
+#        Body: Hear are the possible ....
+#        Date: 2025-Feb-02 18:50:20
+#        Sender: Ruwan Waidyaratne <rwaidyaratne@advantis.com
+#        Body: Your message is well received ....
+#        Date: 2025-Feb-02 18:20:55
+#        Sender: Rajan Yatawara <ryatawara@haycarb.hayleys.com
+#        Body: Please share pricing for ....
