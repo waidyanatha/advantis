@@ -42,7 +42,7 @@ class searchWorkLoads:
         labels_response = self.service.users().labels().list(userId="me").execute()
         return labels_response.get("labels", [])
 
-    def fetch_emails(self, from_date=None, to_date=None, max_results=3):
+    def fetch_emails(self, from_date=None, to_date=None, max_results=4):
         """Fetch recent emails with optional filtering."""
         
         query = []

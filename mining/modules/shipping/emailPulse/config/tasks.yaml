@@ -1,0 +1,14 @@
+content_analysis_task:
+
+  description: >
+    Execute the following steps in order:
+    1. Use the tool to retrieve the email content
+    2. Extract insights from the content to generate the key information:
+          a. short summary of the email thread context
+          b. pending and completed task list
+          c. weighting times between emails
+#    3. Organize the content by subject, body, sender, and datetime
+
+  expected_output: >
+    A structured report containing an email summary, pending tasks, 
+        completed tasks, and estimated response times.

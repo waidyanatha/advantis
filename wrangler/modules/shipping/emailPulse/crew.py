@@ -40,12 +40,7 @@ try:
     from langchain.text_splitter import CharacterTextSplitter
     from langchain_core.retrievers import BaseRetriever
     from langchain_community.embeddings import HuggingFaceEmbeddings
-    # from langchain_community.vectorstores import Chroma
     from langchain_chroma import Chroma
-    # from langchain.agents import load_tools
-    # ''' RAG '''
-    # from langchain_community.vectorstores import Chroma
-    # from langchain_community.tools import DuckDuckGoSearchRun
 
     print("All functional %s-libraries in %s-package of %s-module imported successfully!"
           % (__name__.upper(),__package__.upper(),__module__.upper()))
@@ -84,8 +79,8 @@ class agentWorkLoads():
         global logger
         global pkgConf
         global appConf
-        global clsLLM
-        global clsVDB
+        # global clsLLM
+        # global clsVDB
 
         try:
             self.cwd=os.path.dirname(__file__)
@@ -109,7 +104,7 @@ class agentWorkLoads():
 
             ''' LLM '''
             from rezaware.modules.ml.llm import model as md
-            clsLLM = md.llmWorkLoads(
+            self.clsLLM = md.llmWorkLoads(
                     desc=self.__desc__,
                     provider="groq", #"ollama",  
                     llm_name="llama-3.3-70b-versatile", #"gemma:2b", 
@@ -119,7 +114,7 @@ class agentWorkLoads():
                     base_url="http://192.168.2.200:5050/",
             )
             ''' get the model '''
-            self.llm_model = clsLLM.get()
+            self.llm_model = self.clsLLM.get()
             if not self.llm_model:
                 raise ChildProcessError("Failed to set LLM")
             logger.debug("%s LLM set with %s", __s_fn_id__, self.llm_model)
@@ -133,14 +128,18 @@ class agentWorkLoads():
             tasks = tasks.ScraperTask()
             self.read_emails=tasks.content_read_task(agent=self.reader)
 
-            self._dbRoot = os.path.join(pkgConf.get("CWDS","DATA"),self._job_id)
+            # self._dbRoot = os.path.join(pkgConf.get("CWDS","DATA"),self._job_id)
 
             ''' VECTORDB '''
+            _db_type = 'chromadb'
+            _db_root = os.path.join(pkgConf.get("CWDS","DATA"),self._job_id)
+            _db_name = 'email'
             from rezaware.modules.etl.loader import vectorDB
-            clsVDB = vectorDB.dataWorkLoads(
-                db_type='chromadb', 
-                db_root=self._dbRoot, 
-                db_name="emails")
+            self.clsVDB = vectorDB.dataWorkLoads(
+                db_type=_db_type, 
+                db_root=_db_root,
+                db_name=_db_name
+            )
 
         except Exception as err:
             logger.error("%s %s \n",__s_fn_id__, err)
@@ -152,7 +151,8 @@ class agentWorkLoads():
     @crew
     def crew(self) -> Crew:
 
-        log_file = "/home/nuwan/workspace/advantis/wrangler/data/shipping/emailPulse/crew_full_output.log"
+        # log_file = "/home/nuwan/workspace/advantis/wrangler/data/shipping/emailPulse/crew_full_output.log"
+        log_file = os.path.join(pkgConf.get("CWDS","DATA"),"crew_full_output.log")
         return Crew(
             agents= [self.reader], #self.scraper,
             tasks = [self.read_emails], #self.read_txt,
@@ -163,62 +163,30 @@ class agentWorkLoads():
             verbose = True
         )
 
-    # Function to store data in ChromaDB
-    def store_in_chromadb(self,chunks, db_name, collection_name):
-        # embeddings = HuggingFaceEmbeddings()
-        # db_path = f"/home/nuwan/workspace/penman/wrangler/db/chroma_db_{collection_name}"
-        # vectordb = Chroma.from_documents(
-        #     documents,
-        #     embeddings,
-        #     persist_directory=db_path #f"./chroma_db_{collection_name}"
-        # )
-        clsVDB.dbType='chromadb'
-        
-        # Add documents
-        # for idx, doc in enumerate(chunks):
-        #     collection.add(
-        #         documents=[doc],
-        #         metadatas=[{"id": idx}],
-        #         ids=[str(idx)]  # Unique ID for each document
-        #     )
-        return clsVDB.store_vectors(
-            documents=chunks, # list of document chunks
-            db_name = db_name,    # optional folder to append to the root
-            collection=collection_name,   # the documents collection name
-            embedding_fn=None, # embediing function to use
-            # **kwargs,
-            )
-        # return vectordb
-
     ''' Run the crew '''
     def _run(self, inputs):
 
-        result = self.crew().kickoff(inputs=inputs)
-        chunks = clsVDB.text_to_chunks(text=result.raw, chunk_size=200, overlap=20)
-        print(len(chunks))
-        # vectorstore_ = self.store_in_chromadb(
-        #     chunks=chunks,
-        #     db_name="email",
-        #     collection_name="nuwan_waidyanatha")
+        crew_output = self.crew().kickoff(inputs=inputs)
+        # Process content and store vectors in chroma
+        kwargs = {"SPLITTER" : "LANGCHAIN"}
+        documents = self.clsVDB.text_to_documents(
+            text=crew_output.raw, 
+            chunk_size=200, 
+            overlap=10,
+            **kwargs,
+        )
+        collection_name='nuwan'
+        vect_store_ids_, vectorstore_ = self.clsVDB.store_vectors(
+            documents=documents, # list of document documents
+            collection=collection_name,   # the documents collection name
+            embedding_fn=None, # embediing function to use
+            )        
+        # # _vectorstore_=self.store_in_chromadb(documents, collection_name)
         # print("\nvectorstore_", vectorstore_)
-
-        # Process task content
-        # print(type(self.read_emails.output),self.read_emails.output.raw)
-        # content = self.get_search_content(task=self.research_topic)
-        # log_file = "/home/nuwan/workspace/advantis/wrangler/data/shipping/schedules/crew_full_output.log"
-        # content = agentWorkLoads.read_crew_log(log_fpath=log_file)
-        # # print(content)
-        # # Split content into chunks with overlap
-        # # chunks = aiWorkLoads.text_to_chunks(text=content,
-        # #                                     chunk_size=200, overlap=20)
-        # chunks = clsVDB.text_to_chunks(text=content, chunk_size=200, overlap=20)
-        # # # Store chunks in ChromaDB
-        # vectorstore_=self.store_in_chromadb(chunks,"schedule", "results")
-        # print("vectorstore_", vectorstore_)
 
         # print("Data has been successfully stored to %s in ChromaDB." % str("results"))
 
-        return result #, search_results
+        return crew_output, vect_store_ids_, vectorstore_ #, vectorstore_ #, search_results
 
     # def get_search_content(task):
     #     """
@@ -232,83 +200,3 @@ class agentWorkLoads():
     #     search_results = task.get("search_results", [])
     #     return " ".join([result.get("content", "") for result in search_results])
 
-    # @staticmethod
-    # def split_text_with_overlap(text, chunk_size=200, overlap=20):
-    #     """
-    #     Splits text into overlapping chunks.
-    #     Args:
-    #         text (str): The input text.
-    #         chunk_size (int): The size of each chunk.
-    #         overlap (int): The number of overlapping characters between chunks.
-    #     Returns:
-    #         list: List of text chunks.
-    #     """
-
-    #     chunks = []
-    #     start = 0
-    #     while start < len(text):
-    #         end = min(start + chunk_size, len(text))
-    #         chunks.append(text[start:end])
-    #         start += chunk_size - overlap
-    #     return chunks
-
-    # ''' Function --- TEXT TO CHUNKS ---
-
-    #     authors: <nuwan@soulfish.lk>
-    # '''
-    # @staticmethod
-    # def text_to_chunks(
-    #     text:list=None,
-    #     chunk_size:int=1000, 
-    #     overlap:int=200,
-    #     **kwargs
-    # )->List:
-    #     """
-    #     Description:
-    #         Split the text to chunks
-    #     Attributes :
-    #         folder_path (str) directing to the folder
-    #     Returns :
-    #         documents (list)
-    #     Exceptions :
-    #         Incorrect folder path raizes exception
-    #         Folder with no PDFs raises an exception
-    #     """
-
-    #     __s_fn_id__ = f"{aiWorkLoads.__name__} function <text_to_chunks>"
-
-    #     try:
-    #         ''' validate inputs '''
-    #         if not isinstance(text,list) or len(text)<=0:
-    #             raise AttributeError("Invalid %s text" % type(text))
-    #         if not isinstance(chunk_size,int) and chunk_size<=0:
-    #             raise AttributeError("Invalid chunk_size %d must be > 0; typically 1000")
-    #         if not isinstance(overlap,int) and overlap<0:
-    #             raise AttributeError("Invalid overlap %d must be >= 0")
-    #         logger.debug("%s Splitting %d text documents into %d chunks with %d overlap", 
-    #                      __s_fn_id__, len(text), chunk_size, overlap)
-    #         ''' split the text '''
-    #         text_splitter = RecursiveCharacterTextSplitter(
-    #             chunk_size=chunk_size, 
-    #             chunk_overlap=overlap
-    #         )
-    #         chunks = text_splitter.split_documents(text)
-    #         if not isinstance(chunks,list) or len(chunks)<=0:
-    #             raise RuntimeError("Failed split %d text document" % len(text))
-
-    #     except Exception as err:
-    #         logger.error("%s %s \n",__s_fn_id__, err)
-    #         logger.debug(traceback.format_exc())
-    #         print("[Error]"+__s_fn_id__, err)
-    #         return None
-
-    #     finally:
-    #         logger.info("%s Split %d document into %d chunks", __s_fn_id__, len(text), len(chunks))
-    #         return chunks
-
-    # # Function to load and process web content
-    # def load_and_process_url(self,url):
-    #     loader = WebBaseLoader(url)
-    #     data = loader.load()
-    #     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-    #     return text_splitter.split_documents(data)
