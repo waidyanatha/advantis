@@ -96,7 +96,7 @@ class agentWorkLoads():
             sys.path.insert(1,self.projHome)
 
             ''' initialize the logger '''
-            from rezaware.utils import Logger as logs
+            from dongcha.utils import Logger as logs
             logger = logs.get_logger(
                 cwd=self.projHome,
                 app=self.__app__, 
@@ -153,7 +153,7 @@ class agentWorkLoads():
             # print(self.llm_model)
 
             ''' LLM '''
-            from rezaware.modules.ml.llm import model as md
+            from dongcha.modules.ml.llm import model as md
             clsLLM = md.llmWorkLoads(
                     desc=self.__desc__,
                     provider="groq", #"ollama",
@@ -186,7 +186,7 @@ class agentWorkLoads():
             self._dbRoot = os.path.join(pkgConf.get("CWDS","DATA"),self._job_id)
 
             ''' VECTORDB '''
-            from rezaware.modules.etl.loader import vectorDB
+            from dongcha.modules.etl.loader import vectorDB
             clsVDB = vectorDB.dataWorkLoads(
                 db_type='chromadb', 
                 db_root=self._dbRoot, 
@@ -202,7 +202,7 @@ class agentWorkLoads():
     @crew
     def crew(self) -> Crew:
 
-        log_file = "/home/nuwan/workspace/advantis/wrangler/data/shipping/schedules/crew_full_output.log"
+        log_file = "/home/nuwan/workspace/advantis/wrangler/logs/shipping/schedules/crew_full_output.log"
         return Crew(
             agents= [self.scraper], #self.scraper,
             tasks = [self.read_txt], #self.read_txt,
@@ -294,7 +294,10 @@ class agentWorkLoads():
 
         result = self.crew().kickoff(inputs=inputs)
         # Process task content
-        print(type(self.search_web.output),self.search_web.output.raw)
+        if self.search_web.output is not None:
+            print(type(self.search_web.output),self.search_web.output.raw)
+        else:
+            print("Warning: search_web.output is None")
         # content = self.get_search_content(task=self.research_topic)
         # log_file = "/home/nuwan/workspace/advantis/wrangler/data/shipping/schedules/crew_full_output.log"
         # content = agentWorkLoads.read_crew_log(log_fpath=log_file)

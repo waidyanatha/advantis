@@ -18,7 +18,7 @@ class searchWorkLoads:
             "/home/nuwan/workspace/advantis/",
             "wrangler/data/shipping/emailPulse/def_job123")
         _db_name = 'email'
-        from rezaware.modules.etl.loader import vectorDB
+        from dongcha.modules.etl.loader import vectorDB
         self.clsVDB = vectorDB.dataWorkLoads(
             db_type=_db_type, 
             db_root=_db_root,

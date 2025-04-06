@@ -81,7 +81,7 @@ class agentWorkLoads():
             sys.path.insert(1,self.projHome)
 
             ''' initialize the logger '''
-            from rezaware.utils import Logger as logs
+            from dongcha.utils import Logger as logs
             logger = logs.get_logger(
                 cwd=self.projHome,
                 app=self.__app__, 
@@ -93,7 +93,7 @@ class agentWorkLoads():
             logger.info("%s %s",self.__name__,self.__package__)
 
             ''' LLM '''
-            from rezaware.modules.ml.llm import model as md
+            from dongcha.modules.ml.llm import model as md
             clsLLM = md.llmWorkLoads(
                     desc=self.__desc__,
                     provider="groq", #"ollama",  
@@ -128,7 +128,7 @@ class agentWorkLoads():
     @crew
     def crew(self) -> Crew:
 
-        log_file = "/home/nuwan/workspace/advantis/mining/data/shipping/emailPulse/crew_full_output.log"
+        log_file = "/home/nuwan/workspace/advantis/mining/logs/shipping/emailPulse/crew_full_output.log"
         return Crew(
             agents= [self.analyst], #self.scraper,
             tasks = [self.report], #self.read_txt,

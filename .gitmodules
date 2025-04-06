@@ -2,3 +2,6 @@
 	path = rezaware
 	url = https://github.com/waidyanatha/rezaware.git
 	branch = main
+[submodule "dongcha"]
+	path = dongcha
+	url = https://github.com/waidyanatha/dongcha.git
